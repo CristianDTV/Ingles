@@ -713,6 +713,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentModule = null;
         mainContent.style.opacity = 0;
         setTimeout(() => {
+            // Shuffle the vocabulary array for random order
+            const shuffledVocabulary = [...vocabulary].sort(() => 0.5 - Math.random());
             let flashcardIndex = 0;
             mainContent.innerHTML = `
                 <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
@@ -724,7 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const flashcardUI = document.getElementById('flashcard-ui');
 
             function renderFlashcard() {
-                const cardData = vocabulary[flashcardIndex];
+                const cardData = shuffledVocabulary[flashcardIndex];
                 flashcardUI.innerHTML = `
                      <div class="flashcard-container mb-4">
                         <div class="flashcard" id="current-flashcard">
@@ -734,7 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
                      </div>
                      <div class="flex justify-center items-center space-x-4 mt-4">
                         <button id="prev-card" class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300">&larr;</button>
-                        <span class="text-gray-600">${flashcardIndex + 1} / ${vocabulary.length}</span>
+                        <span class="text-gray-600">${flashcardIndex + 1} / ${shuffledVocabulary.length}</span>
                         <button id="next-card" class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300">&rarr;</button>
                      </div>
                      <div id="flashcard-feedback" class="flex justify-around mt-6 hidden">
@@ -752,12 +754,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 document.getElementById('prev-card').addEventListener('click', () => {
-                    flashcardIndex = (flashcardIndex - 1 + vocabulary.length) % vocabulary.length;
+                    flashcardIndex = (flashcardIndex - 1 + shuffledVocabulary.length) % shuffledVocabulary.length;
                     renderFlashcard();
                 });
 
                 document.getElementById('next-card').addEventListener('click', () => {
-                    flashcardIndex = (flashcardIndex + 1) % vocabulary.length;
+                    flashcardIndex = (flashcardIndex + 1) % shuffledVocabulary.length;
                     renderFlashcard();
                 });
             }
