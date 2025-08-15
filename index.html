@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso Interactivo de Inglés</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .main-container {
+            transition: opacity 0.5s ease-in-out;
+        }
+        .tab-button.active {
+            border-color: #3b82f6;
+            background-color: #3b82f6;
+            color: white;
+        }
+        .card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .progress-circle {
+            position: relative;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .progress-circle.completed {
+            background-color: #4ade80;
+        }
+        .flashcard-container {
+            perspective: 1000px;
+        }
+        .flashcard {
+            width: 100%;
+            /* height: 200px; */
+            height: clamp(160px, 50vw, 280px); /* responsive height for mobile */
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer; /* clearer tap affordance on mobile */
+        }
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+        .flashcard-front {
+            background-color: white;
+            border: 1px solid #e2e8f0;
+        }
+        .flashcard-back {
+            background-color: #f0f9ff;
+            transform: rotateY(180deg);
+            flex-direction: column;
+        }
+        .prose {
+            color: #374151;
+        }
+        .prose h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .prose p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .prose li {
+            margin-bottom: 0.5rem;
+        }
+        .prose strong {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div id="app-container" class="max-w-7xl mx-auto p-4 md:p-8">
+        
+        <header class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-700">Curso de Inglés Progresivo</h1>
+                <nav>
+                    <button id="home-btn" class="text-blue-500 hover:text-blue-700 font-medium">Módulos</button>
+                    <button id="vocab-btn" class="ml-4 text-blue-500 hover:text-blue-700 font-medium">Vocabulario</button>
+                </nav>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-600 mb-1">Progreso General</h3>
+                <div class="w-full bg-gray-200 rounded-full h-4">
+                    <div id="general-progress-bar" class="bg-blue-500 h-4 rounded-full transition-all duration-500 flex items-center justify-center text-xs text-white" style="width: 0%;"></div>
+                </div>
+            </div>
+        </header>
+
+        <main id="main-content" class="main-container">
+            </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const courseData = [
+        {
+            part: "Parte 1: Fundamentos",
+            modules: [
+                {
+                    id: 'adjectives',
+                    title: 'Adjectives (Adjetivos)',
+                    summary: 'Los adjetivos son palabras que describen o modifican a los sustantivos (personas, lugares, cosas). Añaden detalles y hacen que el lenguaje sea más específico y vívido. Siempre se colocan antes del sustantivo que describen.',
+                    grammar: `<h3>Reglas Gramaticales de los Adjetivos</h3>
+                            <p>1. <strong>Posición:</strong> Generalmente, los adjetivos van antes del sustantivo.</p>
+                            <ul><li><span class="font-semibold">Correcto:</span> The <strong class="text-blue-600">beautiful</strong> house.</li><li><span class="font-semibold">Incorrecto:</span> The house beautiful.</li></ul>
+                            <p>2. <strong>Después de verbos de estado (be, feel, seem):</strong> Los adjetivos también pueden ir después de verbos como 'to be', 'to feel', 'to seem', 'to look', etc.</p>
+                            <ul><li>He is <strong class="text-blue-600">happy</strong>.</li><li>She looks <strong class="text-blue-600">tired</strong>.</li></ul>
+                            <p>3. <strong>Orden de los adjetivos:</strong> Cuando se usan múltiples adjetivos, siguen un orden específico: Opinión, Tamaño, Edad, Forma, Color, Origen, Material, Propósito. (OSASCOMP)</p>
+                            <ul><li>A <strong class="text-blue-600">lovely old red</strong> car. (Opinión, Edad, Color)</li><li>A <strong class="text-blue-600">big round wooden</strong> table. (Tamaño, Forma, Material)</li></ul>`,
+                    quiz: [
+                        { type: 'multiple-choice', question: 'Choose the correct sentence.', options: ['The car blue is fast.', 'The blue car is fast.', 'The is blue car fast.'], answer: 'The blue car is fast.' },
+                        { type: 'fill-in-the-blank', question: 'The coffee tastes ______. (strong)', answer: 'strong' },
+                        { type: 'correct-the-sentence', question: 'She bought a dress new beautiful.', answer: 'She bought a beautiful new dress.' },
+                        { type: 'multiple-choice', question: 'Which word is an adjective?', options: ['quickly', 'run', 'happy', 'house'], answer: 'happy' },
+                        { type: 'fill-in-the-blank', question: 'This exercise is ______. (difficult)', answer: 'difficult' },
+                        { type: 'correct-the-sentence', question: 'He is a man interesting.', answer: 'He is an interesting man.' },
+                        { type: 'multiple-choice', question: 'I feel ____ today.', options: ['good', 'well', 'goodly'], answer: 'good' },
+                        { type: 'fill-in-the-blank', question: 'It was a ____ day. (sunny)', answer: 'sunny' },
+                        { type: 'correct-the-sentence', question: 'They have a dog black big.', answer: 'They have a big black dog.' },
+                        { type: 'multiple-choice', question: 'The soup smells ____.', options: ['delicious', 'deliciously', 'delicacy'], answer: 'delicious' },
+                        { type: 'fill-in-the-blank', question: 'Her story was ______. (incredible)', answer: 'incredible' },
+                        { type: 'correct-the-sentence', question: 'That is a wooden old chair.', answer: 'That is an old wooden chair.' },
+                        { type: 'multiple-choice', question: 'Which sentence has the correct adjective order?', options: ['A small old green box.', 'An old green small box.', 'A green small old box.'], answer: 'A small old green box.' },
+                        { type: 'fill-in-the-blank', question: 'You look ____ in that dress. (amazing)', answer: 'amazing' },
+                        { type: 'correct-the-sentence', question: 'He is a teacher French young.', answer: 'He is a young French teacher.' },
+                        { type: 'multiple-choice', question: 'The music is too ____.', options: ['loud', 'loudly', 'loudness'], answer: 'loud' },
+                        { type: 'fill-in-the-blank', question: 'The movie was ______. (boring)', answer: 'boring' },
+                        { type: 'correct-the-sentence', question: 'I saw a cat cute little.', answer: 'I saw a cute little cat.' },
+                        { type: 'multiple-choice', question: 'This is a ____ book.', options: ['very interesting', 'interesting very', 'a very interesting'], answer: 'very interesting' },
+                        { type: 'fill-in-the-blank', question: 'The weather is ____ today. (beautiful)', answer: 'beautiful' },
+                    ]
+                },
+                {
+                    id: 'comparatives-superlatives',
+                    title: 'Comparatives & Superlatives',
+                    summary: 'Los comparativos se usan para comparar diferencias entre dos objetos. Los superlativos se usan para describir un objeto que está en el extremo superior o inferior de una cualidad (el más alto, el más pequeño, el más rápido).',
+                    grammar: `<h3>Reglas Gramaticales</h3>
+                            <p>1. <strong>Adjetivos de una sílaba:</strong> Añadir '-er' para el comparativo y '-est' para el superlativo.</p>
+                            <ul><li>Tall → Tall<strong class="text-blue-600">er</strong> → The Tall<strong class="text-blue-600">est</strong></li><li>Old → Old<strong class="text-blue-600">er</strong> → The Old<strong class="text-blue-600">est</strong></li></ul>
+                            <p>2. <strong>Adjetivos de dos sílabas terminados en -y:</strong> Cambiar la 'y' por 'i' y añadir '-er' o '-est'.</p>
+                            <ul><li>Happy → Happ<strong class="text-blue-600">ier</strong> → The Happ<strong class="text-blue-600">iest</strong></li><li>Busy → Bus<strong class="text-blue-600">ier</strong> → The Bus<strong class="text-blue-600">iest</strong></li></ul>
+                            <p>3. <strong>Adjetivos de dos o más sílabas:</strong> Usar 'more' para el comparativo y 'the most' para el superlativo.</p>
+                            <ul><li>Beautiful → <strong class="text-blue-600">More</strong> beautiful → <strong class="text-blue-600">The most</strong> beautiful</li><li>Expensive → <strong class="text-blue-600">More</strong> expensive → <strong class="text-blue-600">The most</strong> expensive</li></ul>
+                            <p>4. <strong>Irregulares:</strong> Algunos adjetivos tienen formas irregulares.</p>
+                            <ul><li>Good → Better → The best</li><li>Bad → Worse → The worst</li><li>Far → Farther/Further → The farthest/furthest</li></ul>`,
+                    quiz: [
+                        { type: 'multiple-choice', question: 'This car is ______ than that one.', options: ['expensiver', 'more expensive', 'most expensive'], answer: 'more expensive' },
+                        { type: 'fill-in-the-blank', question: 'She is the ______ (tall) person in her family.', answer: 'tallest' },
+                        { type: 'correct-the-sentence', question: 'He is more strong than his brother.', answer: 'He is stronger than his brother.' },
+                        { type: 'multiple-choice', question: 'This is the ______ movie I have ever seen.', options: ['goodest', 'better', 'best'], answer: 'best' },
+                        { type: 'fill-in-the-blank', question: 'My sister is ______ (young) than me.', answer: 'younger' },
+                        { type: 'correct-the-sentence', question: 'The weather today is more bad than yesterday.', answer: 'The weather today is worse than yesterday.' },
+                        { type: 'multiple-choice', question: 'Which is the ______ planet from the Sun?', options: ['farther', 'farthest', 'most far'], answer: 'farthest' },
+                        { type: 'fill-in-the-blank', question: 'This book is ______ (interesting) than the last one.', answer: 'more interesting' },
+                        { type: 'correct-the-sentence', question: 'She is the happyest person I know.', answer: 'She is the happiest person I know.' },
+                        { type: 'multiple-choice', question: 'The exam was ______ than I expected.', options: ['more easy', 'easier', 'easiest'], answer: 'easier' },
+                        { type: 'fill-in-the-blank', question: 'Mount Everest is the ______ (high) mountain in the world.', answer: 'highest' },
+                        { type: 'correct-the-sentence', question: 'He is the most fast runner in the team.', answer: 'He is the fastest runner in the team.' },
+                        { type: 'multiple-choice', question: 'Your house is ______ than mine.', options: ['bigger', 'more big', 'biggest'], answer: 'bigger' },
+                        { type: 'fill-in-the-blank', question: 'This is the ______ (delicious) cake I have ever tasted.', answer: 'most delicious' },
+                        { type: 'correct-the-sentence', question: 'This is the funnier joke I\'ve heard.', answer: 'This is the funniest joke I\'ve heard.' },
+                        { type: 'multiple-choice', question: 'The situation is getting ______.', options: ['bader', 'worse', 'worst'], answer: 'worse' },
+                        { type: 'fill-in-the-blank', question: 'He is ______ (intelligent) than his classmates.', answer: 'more intelligent' },
+                        { type: 'correct-the-sentence', question: 'She speaks English more good than I do.', answer: 'She speaks English better than I do.' },
+                        { type: 'multiple-choice', question: 'Who is the ______ person in the world?', options: ['richer', 'richest', 'most rich'], answer: 'richest' },
+                        { type: 'fill-in-the-blank', question: 'The city is ______ (crowded) in the summer.', answer: 'more crowded' },
+                    ]
+                },
+                {
+                    id: 'adverbs',
+                    title: 'Adverbs (Adverbios)',
+                    summary: 'Los adverbios modifican verbos, adjetivos u otros adverbios. Nos dicen cómo, cuándo, dónde o con qué frecuencia ocurre una acción. Muchos adverbios terminan en "-ly".',
+                    grammar: `<h3>Tipos de Adverbios</h3>
+                        <p>1. <strong>Adverbios de Modo (How?):</strong> Describen la manera en que se hace algo.</p>
+                        <ul><li>He runs <strong class="text-blue-600">quickly</strong>.</li><li>She speaks <strong class="text-blue-600">softly</strong>.</li></ul>
+                        <p>2. <strong>Adverbios de Tiempo (When?):</strong> Indican cuándo ocurre una acción.</p>
+                        <ul><li>I will see you <strong class="text-blue-600">tomorrow</strong>.</li><li>He arrived <strong class="text-blue-600">yesterday</strong>.</li></ul>
+                        <p>3. <strong>Adverbios de Lugar (Where?):</strong> Indican dónde ocurre una acción.</p>
+                        <ul><li>Please, put the book <strong class="text-blue-600">here</strong>.</li><li>They are playing <strong class="text-blue-600">outside</strong>.</li></ul>
+                        <p>4. <strong>Adverbios de Frecuencia (How often?):</strong> Indican con qué frecuencia ocurre una acción. Se suelen colocar antes del verbo principal.</p>
+                        <ul><li>I <strong class="text-blue-600">always</strong> drink coffee in the morning.</li><li>She <strong class="text-blue-600">never</strong> eats meat.</li></ul>
+                        <p>5. <strong>Adverbios de Grado (To what extent?):</strong> Modifican adjetivos u otros adverbios para indicar intensidad.</p>
+                        <ul><li>It is <strong class="text-blue-600">very</strong> hot.</li><li>She is <strong class="text-blue-600">extremely</strong> tired.</li></ul>`,
+                    quiz: [
+                        { type: 'multiple-choice', question: 'She sings ____.', options: ['beautiful', 'beautifully', 'beauty'], answer: 'beautifully' },
+                        { type: 'fill-in-the-blank', question: 'He ____ arrives on time. (rare)', answer: 'rarely' },
+                        { type: 'correct-the-sentence', question: 'He speaks English good.', answer: 'He speaks English well.' },
+                        { type: 'multiple-choice', question: 'I saw him ____.', options: ['yesterday', 'tomorrow', 'soon'], answer: 'yesterday' },
+                        { type: 'fill-in-the-blank', question: 'They are waiting ____. (patient)', answer: 'patiently' },
+                        { type: 'correct-the-sentence', question: 'She ran quick to the store.', answer: 'She ran quickly to the store.' },
+                        { type: 'multiple-choice', question: 'The children are playing ____.', options: ['inside', 'insidely', 'indoors'], answer: 'inside' },
+                        { type: 'fill-in-the-blank', question: 'This is an ____ easy exercise. (extreme)', answer: 'extremely' },
+                        { type: 'correct-the-sentence', question: 'He always is happy.', answer: 'He is always happy.' },
+                        { type: 'multiple-choice', question: 'She ____ forgets her keys.', options: ['often', 'oftens', 'oftened'], answer: 'often' },
+                        { type: 'fill-in-the-blank', question: 'The music is ____ loud. (too)', answer: 'too' },
+                        { type: 'correct-the-sentence', question: 'Please, drive slow.', answer: 'Please, drive slowly.' },
+                        { type: 'multiple-choice', question: 'I will call you ____.', options: ['later', 'late', 'lately'], answer: 'later' },
+                        { type: 'fill-in-the-blank', question: 'He did the job ____. (careful)', answer: 'carefully' },
+                        { type: 'correct-the-sentence', question: 'I hard study for my exams.', answer: 'I study hard for my exams.' },
+                        { type: 'multiple-choice', question: 'He is ____ strong.', options: ['enough', 'too', 'very'], answer: 'very' },
+                        { type: 'fill-in-the-blank', question: 'I have ____ finished. (near)', answer: 'nearly' },
+                        { type: 'correct-the-sentence', question: 'She never is late.', answer: 'She is never late.' },
+                        { type: 'multiple-choice', question: 'Where did you put the keys? I left them ____.', options: ['there', 'their', 'they\'re'], answer: 'there' },
+                        { type: 'fill-in-the-blank', question: 'He spoke ____ about his trip. (brief)', answer: 'briefly' },
+                    ]
+                },
+                {
+                    id: 'present-simple',
+                    title: 'Present Simple',
+                    summary: 'El Presente Simple se usa para hablar de hábitos, rutinas, hechos generales y verdades universales. Es uno de los tiempos verbales más comunes y fundamentales en inglés.',
+                    grammar: `<h3>Usos y Reglas del Presente Simple</h3>
+                        <p>1. <strong>Hábitos y Rutinas:</strong> Acciones que se repiten con regularidad.</p>
+                        <ul><li>I <strong class="text-blue-600">wake up</strong> at 7 AM every day.</li><li>She <strong class="text-blue-600">drinks</strong> coffee in the morning.</li></ul>
+                        <p>2. <strong>Hechos Generales y Verdades Universales:</strong> Cosas que son siempre ciertas.</p>
+                        <ul><li>The Earth <strong class="text-blue-600">revolves</strong> around the Sun.</li><li>Water <strong class="text-blue-600">boils</strong> at 100 degrees Celsius.</li></ul>
+                        <h3>Conjugación</h3>
+                        <p>La forma del verbo es la misma para todos los sujetos, excepto para la tercera persona del singular (he, she, it), donde se añade una '-s' al final del verbo.</p>
+                        <ul><li>I work / You work / We work / They work</li><li>He work<strong class="text-blue-600">s</strong> / She work<strong class="text-blue-600">s</strong> / It work<strong class="text-blue-600">s</strong></li></ul>
+                        <h3>Negativo y Preguntas</h3>
+                        <p>Para formar negaciones y preguntas, se usan los auxiliares <strong>do</strong> y <strong>does</strong>.</p>
+                        <ul>
+                            <li><strong>Negativo:</strong> She <strong class="text-red-600">does not</strong> (doesn't) work here. / We <strong class="text-red-600">do not</strong> (don't) live in London.</li>
+                            <li><strong>Pregunta:</strong> <strong class="text-green-600">Does</strong> he work here? / <strong class="text-green-600">Do</strong> you live in London?</li>
+                        </ul>`,
+                    quiz: [
+                        { type: 'multiple-choice', question: 'She ____ to the gym every day.', options: ['go', 'goes', 'is going'], answer: 'goes' },
+                        { type: 'fill-in-the-blank', question: 'They ____ (not live) in this city.', answer: 'do not live' },
+                        { type: 'correct-the-sentence', question: 'He play tennis on weekends.', answer: 'He plays tennis on weekends.' },
+                        { type: 'multiple-choice', question: '____ you like pizza?', options: ['Does', 'Do', 'Are'], answer: 'Do' },
+                        { type: 'fill-in-the-blank', question: 'The sun ____ (rise) in the east.', answer: 'rises' },
+                        { type: 'correct-the-sentence', question: 'She don\'t speak French.', answer: 'She doesn\'t speak French.' },
+                        { type: 'multiple-choice', question: 'My parents ____ in a small house.', options: ['live', 'lives', 'is living'], answer: 'live' },
+                        { type: 'fill-in-the-blank', question: 'He ____ (watch) movies every Friday.', answer: 'watches' },
+                        { type: 'correct-the-sentence', question: 'Does she has a car?', answer: 'Does she have a car?' },
+                        { type: 'multiple-choice', question: 'I ____ my teeth twice a day.', options: ['brush', 'brushes', 'am brushing'], answer: 'brush' },
+                        { type: 'fill-in-the-blank', question: 'It ____ (not rain) much in the desert.', answer: 'does not rain' },
+                        { type: 'correct-the-sentence', question: 'We goes to school by bus.', answer: 'We go to school by bus.' },
+                        { type: 'multiple-choice', question: 'What time ____ the train leave?', options: ['do', 'does', 'is'], answer: 'does' },
+                        { type: 'fill-in-the-blank', question: 'She ____ (study) a lot for her exams.', answer: 'studies' },
+                        { type: 'correct-the-sentence', question: 'I not understand this rule.', answer: 'I do not understand this rule.' },
+                        { type: 'multiple-choice', question: 'He ____ his homework after school.', options: ['do', 'does', 'is doing'], answer: 'does' },
+                        { type: 'fill-in-the-blank', question: 'Cats ____ (like) milk.', answer: 'like' },
+                        { type: 'correct-the-sentence', question: 'Do he works here?', answer: 'Does he work here?' },
+                        { type: 'multiple-choice', question: 'I ____ get up early on Sundays.', options: ['don\'t', 'doesn\'t', 'am not'], answer: 'don\'t' },
+                        { type: 'fill-in-the-blank', question: 'The class ____ (start) at 9 AM.', answer: 'starts' },
+                    ]
+                },
+                {
+                    id: 'present-continuous',
+                    title: 'Present Continuous',
+                    summary: 'El Presente Continuo (o Progresivo) se usa para describir acciones que están sucediendo en el momento de hablar, acciones temporales o planes futuros ya confirmados.',
+                    grammar: `<h3>Usos y Reglas del Presente Continuo</h3>
+                        <p>1. <strong>Acciones en el momento de hablar:</strong> Algo que ocurre ahora mismo.</p>
+                        <ul><li>You <strong class="text-blue-600">are reading</strong> this sentence.</li><li>He <strong class="text-blue-600">is watching</strong> TV.</li></ul>
+                        <p>2. <strong>Acciones Temporales:</strong> Acciones que ocurren durante un periodo de tiempo limitado, no necesariamente en el momento exacto de hablar.</p>
+                        <ul><li>I <strong class="text-blue-600">am studying</strong> for my exam this week.</li><li>They <strong class="text-blue-600">are living</strong> in Paris for a few months.</li></ul>
+                        <p>3. <strong>Planes Futuros Confirmados:</strong> Arreglos futuros que ya están planeados.</p>
+                        <ul><li>I <strong class="text-blue-600">am meeting</strong> my friends tonight.</li><li>She <strong class="text-blue-600">is flying</strong> to New York tomorrow.</li></ul>
+                        <h3>Formación</h3>
+                        <p>Se forma con el verbo <strong>'to be'</strong> (am, is, are) en presente + el <strong>verbo principal en gerundio (-ing)</strong>.</p>
+                        <ul><li>I <strong class="text-blue-600">am working</strong>.</li><li>He/She/It <strong class="text-blue-600">is working</strong>.</li><li>You/We/They <strong class="text-blue-600">are working</strong>.</li></ul>`,
+                    quiz: [
+                        { type: 'multiple-choice', question: 'Look! It ____.', options: ['rains', 'is raining', 'rain'], answer: 'is raining' },
+                        { type: 'fill-in-the-blank', question: 'I ____ (not work) at the moment.', answer: 'am not working' },
+                        { type: 'correct-the-sentence', question: 'She read a book now.', answer: 'She is reading a book now.' },
+                        { type: 'multiple-choice', question: 'What ____ you ____?', options: ['are, doing', 'do, do', 'is, doing'], answer: 'are, doing' },
+                        { type: 'fill-in-the-blank', question: 'They ____ (travel) to Spain next week.', answer: 'are traveling' },
+                        { type: 'correct-the-sentence', question: 'He no is sleeping.', answer: 'He is not sleeping.' },
+                        { type: 'multiple-choice', question: 'Please be quiet. The baby ____.', options: ['sleeps', 'is sleeping', 'sleep'], answer: 'is sleeping' },
+                        { type: 'fill-in-the-blank', question: 'We ____ (have) dinner at a restaurant tonight.', answer: 'are having' },
+                        { type: 'correct-the-sentence', question: 'Why you are crying?', answer: 'Why are you crying?' },
+                        { type: 'multiple-choice', question: 'He ____ a new language this semester.', options: ['learns', 'is learning', 'learn'], answer: 'is learning' },
+                        { type: 'fill-in-the-blank', question: 'She ____ (not listen) to music right now.', answer: 'is not listening' },
+                        { type: 'correct-the-sentence', question: 'I am write an email.', answer: 'I am writing an email.' },
+                        { type: 'multiple-choice', question: 'Listen! Someone ____ the piano.', options: ['plays', 'is playing', 'play'], answer: 'is playing' },
+                        { type: 'fill-in-the-blank', question: 'Where ____ they ____ (go)?', answer: 'are they going' },
+                        { type: 'correct-the-sentence', question: 'The children play outside at the moment.', answer: 'The children are playing outside at the moment.' },
+                        { type: 'multiple-choice', question: 'I ____ my parents tomorrow.', options: ['visit', 'am visiting', 'visits'], answer: 'am visiting' },
+                        { type: 'fill-in-the-blank', question: 'He ____ (wear) a blue shirt today.', answer: 'is wearing' },
+                        { type: 'correct-the-sentence', question: 'Are you watch this movie?', answer: 'Are you watching this movie?' },
+                        { type: 'multiple-choice', question: 'The company ____ new employees this month.', options: ['is hiring', 'hires', 'hire'], answer: 'is hiring' },
+                        { type: 'fill-in-the-blank', question: 'What ____ you ____ (read)?', answer: 'are you reading' },
+                    ]
+                },
+                {
+                    id: 'past-simple',
+                    title: 'Past Simple',
+                    summary: 'El Pasado Simple se utiliza para hablar de acciones completadas que ocurrieron en un tiempo específico en el pasado. Es el tiempo verbal más común para narrar historias o eventos pasados.',
+                    grammar: `<h3>Usos y Reglas del Pasado Simple</h3>
+                        <p>1. <strong>Acciones Completadas en el Pasado:</strong> La acción comenzó y terminó en el pasado.</p>
+                        <ul><li>I <strong class="text-blue-600">visited</strong> Paris last year.</li><li>She <strong class="text-blue-600">finished</strong> her homework an hour ago.</li></ul>
+                        <h3>Formación</h3>
+                        <p><strong>Verbos Regulares:</strong> Se añade '-ed' al final del verbo base.</p>
+                        <ul><li>work → work<strong class="text-blue-600">ed</strong></li><li>play → play<strong class="text-blue-600">ed</strong></li><li>live → liv<strong class="text-blue-600">ed</strong></li></ul>
+                        <p><strong>Verbos Irregulares:</strong> Tienen su propia forma única que debe ser memorizada (la "segunda columna" de la lista de verbos irregulares).</p>
+                        <ul><li>go → <strong class="text-blue-600">went</strong></li><li>see → <strong class="text-blue-600">saw</strong></li><li>eat → <strong class="text-blue-600">ate</strong></li></ul>
+                        <h3>Negativo y Preguntas</h3>
+                        <p>Para formar negaciones y preguntas, se usa el auxiliar <strong>did</strong> (pasado de 'do') para todos los sujetos. El verbo principal vuelve a su forma base (infinitivo).</p>
+                        <ul>
+                            <li><strong>Negativo:</strong> I <strong class="text-red-600">did not</strong> (didn't) go to the party.</li>
+                            <li><strong>Pregunta:</strong> <strong class="text-green-600">Did</strong> you see the movie?</li>
+                        </ul>`,
+                    quiz: [
+                        { type: 'multiple-choice', question: 'I ____ a movie yesterday.', options: ['see', 'saw', 'have seen'], answer: 'saw' },
+                        { type: 'fill-in-the-blank', question: 'She ____ (not visit) her grandmother last week.', answer: 'did not visit' },
+                        { type: 'correct-the-sentence', question: 'He buyed a new car.', answer: 'He bought a new car.' },
+                        { type: 'multiple-choice', question: '____ they finish the project?', options: ['Do', 'Did', 'Does'], answer: 'Did' },
+                        { type: 'fill-in-the-blank', question: 'We ____ (eat) pizza for dinner.', answer: 'ate' },
+                        { type: 'correct-the-sentence', question: 'Did you went to the concert?', answer: 'Did you go to the concert?' },
+                        { type: 'multiple-choice', question: 'He ____ in London for five years.', options: ['lived', 'lives', 'has lived'], answer: 'lived' },
+                        { type: 'fill-in-the-blank', question: 'They ____ (arrive) late to the meeting.', answer: 'arrived' },
+                        { type: 'correct-the-sentence', question: 'I didn\'t saw him.', answer: 'I didn\'t see him.' },
+                        { type: 'multiple-choice', question: 'She ____ her keys this morning.', options: ['loses', 'lost', 'has lost'], answer: 'lost' },
+                        { type: 'fill-in-the-blank', question: 'What ____ you ____ (do) last weekend?', answer: 'did you do' },
+                        { type: 'correct-the-sentence', question: 'He not called me yesterday.', answer: 'He did not call me yesterday.' },
+                        { type: 'multiple-choice', question: 'They ____ a great time at the party.', options: ['had', 'have', 'haded'], answer: 'had' },
+                        { type: 'fill-in-the-blank', question: 'I ____ (begin) to learn guitar two years ago.', answer: 'began' },
+                        { type: 'correct-the-sentence', question: 'She goed to Italy for her vacation.', answer: 'She went to Italy for her vacation.' },
+                        { type: 'multiple-choice', question: 'When ____ he ____?', options: ['did, leave', 'do, leave', 'did, left'], answer: 'did, leave' },
+                        { type: 'fill-in-the-blank', question: 'The train ____ (stop) suddenly.', answer: 'stopped' },
+                        { type: 'correct-the-sentence', question: 'We was at home last night.', answer: 'We were at home last night.' },
+                        { type: 'multiple-choice', question: 'He ____ me the truth.', options: ['told', 'telled', 'tells'], answer: 'told' },
+                        { type: 'fill-in-the-blank', question: 'I ____ (read) that book when I was a child.', answer: 'read' },
+                    ]
+                },
+                {
+                    id: 'simple-future',
+                    title: 'Simple Future (Futuro Simple)',
+                    summary: 'El Futuro Simple se usa para hablar de eventos que ocurrirán en el futuro. Se puede expresar principalmente con "will" y "be going to", cada uno con un matiz diferente.',
+                    grammar: `<h3>Formas del Futuro Simple</h3>
+                        <p>1. <strong>Futuro con "Will":</strong> Se usa para decisiones espontáneas, predicciones, promesas y ofertas.</p>
+                        <ul>
+                            <li><strong>Decisión espontánea:</strong> I'm thirsty. I think I <strong class="text-blue-600">will buy</strong> a drink.</li>
+                            <li><strong>Predicción:</strong> It <strong class="text-blue-600">will rain</strong> tomorrow.</li>
+                            <li><strong>Promesa:</strong> I <strong class="text-blue-600">will call</strong> you later.</li>
+                        </ul>
+                        <p><strong>Formación:</strong> Sujeto + will + verbo en forma base.</p>
+                        <p><strong>Negativo:</strong> Sujeto + will not (won't) + verbo en forma base.</p>
+                        <p>2. <strong>Futuro con "Be Going To":</strong> Se usa para planes e intenciones futuras, y para predicciones basadas en evidencia presente.</p>
+                        <ul>
+                            <li><strong>Plan/Intención:</strong> I <strong class="text-blue-600">am going to visit</strong> my aunt next month.</li>
+                            <li><strong>Predicción con evidencia:</strong> Look at those dark clouds! It <strong class="text-blue-600">is going to rain</strong>.</li>
+                        </ul>
+                        <p><strong>Formación:</strong> Sujeto + verbo 'to be' (am/is/are) + going to + verbo en forma base.</p>`,
+                    quiz: [
+                        { type: 'multiple-choice', question: 'I think it ____ tomorrow.', options: ['will rain', 'is going to rain', 'rains'], answer: 'will rain' },
+                        { type: 'fill-in-the-blank', question: 'We ____ (visit) our grandparents next weekend. (It\'s a plan)', answer: 'are going to visit' },
+                        { type: 'correct-the-sentence', question: 'He will to call you.', answer: 'He will call you.' },
+                        { type: 'multiple-choice', question: 'The phone is ringing. I ____ get it.', options: ['am going to', 'will', 'am'], answer: 'will' },
+                        { type: 'fill-in-the-blank', question: 'She ____ (not come) to the party tonight.', answer: 'will not come' },
+                        { type: 'correct-the-sentence', question: 'They are going to travelling to Japan.', answer: 'They are going to travel to Japan.' },
+                        { type: 'multiple-choice', question: 'What are your plans for the summer? I ____ a new language.', options: ['will learn', 'am going to learn', 'learn'], answer: 'am going to learn' },
+                        { type: 'fill-in-the-blank', question: 'He promised he ____ (help) us.', answer: 'will help' },
+                        { type: 'correct-the-sentence', question: 'I will not to be late.', answer: 'I will not be late.' },
+                        { type: 'multiple-choice', question: 'Look at the time! We ____ miss the bus.', options: ['will', 'are going to', 'go to'], answer: 'are going to' },
+                        { type: 'fill-in-the-blank', question: 'I ____ (be) 30 years old next year.', answer: 'will be' },
+                        { type: 'correct-the-sentence', question: 'She is going buy a new dress.', answer: 'She is going to buy a new dress.' },
+                        { type: 'multiple-choice', question: 'Perhaps I ____ see you tomorrow.', options: ['am going to', 'will', 'see'], answer: 'will' },
+                        { type: 'fill-in-the-blank', question: 'They ____ (have) a baby in May. (They know it)', answer: 'are going to have' },
+                        { type: 'correct-the-sentence', question: 'Will you to help me with this?', answer: 'Will you help me with this?' },
+                        { type: 'multiple-choice', question: 'A: "The bag is heavy." B: "I ____ carry it for you."', options: ['am going to', 'will', 'am'], answer: 'will' },
+                        { type: 'fill-in-the-blank', question: '____ you ____ (watch) the game tonight? (Are you planning to?)', answer: 'Are you going to watch' },
+                        { type: 'correct-the-sentence', question: 'It is going to be a sunny day.', answer: 'It is going to be a sunny day.' },
+                        { type: 'multiple-choice', question: 'I\'ve decided. I ____ for that job.', options: ['will apply', 'am going to apply', 'apply'], answer: 'am going to apply' },
+                        { type: 'fill-in-the-blank', question: 'This car ____ (not start).', answer: 'will not start' },
+                    ]
+                },
+            ]
+        },
+        {
+            part: "Parte 2: Tiempos Perfectos y Condicionales",
+            modules: [
+                {
+                    id: 'present-perfect',
+                    title: 'Present Perfect',
+                    summary: 'El Presente Perfecto conecta el pasado con el presente. Se usa para hablar de acciones que ocurrieron en un momento no especificado del pasado, o acciones pasadas que tienen un resultado en el presente.',
+                    grammar: `<h3>Usos del Presente Perfecto</h3>
+                        <p>1. <strong>Experiencias de Vida (sin tiempo específico):</strong> Se usa para hablar de si algo ha sucedido o no en la vida de una persona.</p>
+                        <ul>
+                            <li>I <strong class="text-blue-600">have been</strong> to Japan. (En algún momento de mi vida).</li>
+                            <li>She <strong class="text-blue-600">has never eaten</strong> sushi.</li>
+                        </ul>
+                        <p>2. <strong>Acciones Pasadas con Resultado en el Presente:</strong> La acción ocurrió en el pasado, pero la consecuencia es importante ahora.</p>
+                        <ul>
+                            <li>I <strong class="text-blue-600">have lost</strong> my keys. (El resultado es que ahora no puedo entrar en casa).</li>
+                            <li>He <strong class="text-blue-600">has finished</strong> his work. (El resultado es que ahora está libre).</li>
+                        </ul>
+                        <p>3. <strong>Acciones que comenzaron en el pasado y continúan en el presente:</strong> A menudo se usa con 'for' (por un período de tiempo) y 'since' (desde un punto en el tiempo).</p>
+                        <ul>
+                            <li>They <strong class="text-blue-600">have lived</strong> here for ten years. (Y todavía viven aquí).</li>
+                            <li>She <strong class="text-blue-600">has worked</strong> here since 2015. (Y todavía trabaja aquí).</li>
+                        </ul>
+                        <h3>Formación</h3>
+                        <p>Se forma con el verbo auxiliar <strong>'have'/'has'</strong> + el <strong>participio pasado</strong> del verbo principal (la "tercera columna" de la lista de verbos).</p>
+                        <ul><li>I/You/We/They <strong class="text-blue-600">have worked</strong>.</li><li>He/She/It <strong class="text-blue-600">has worked</strong>.</li></ul>`,
+                    quiz: [
+                        { type: 'multiple-choice', question: 'She ____ her homework.', options: ['has finished', 'finished', 'finish'], answer: 'has finished' },
+                        { type: 'fill-in-the-blank', question: 'They ____ (live) here for three years.', answer: 'have lived' },
+                        { type: 'correct-the-sentence', question: 'I have saw that movie before.', answer: 'I have seen that movie before.' },
+                        { type: 'multiple-choice', question: '____ you ever ____ to Mexico?', options: ['Have, been', 'Did, go', 'Have, went'], answer: 'Have, been' },
+                        { type: 'fill-in-the-blank', question: 'He ____ (not call) me yet.', answer: 'has not called' },
+                        { type: 'correct-the-sentence', question: 'She has buy a new phone.', answer: 'She has bought a new phone.' },
+                        { type: 'multiple-choice', question: 'We ____ each other since childhood.', options: ['knew', 'have known', 'know'], answer: 'have known' },
+                        { type: 'fill-in-the-blank', question: 'I ____ just ____ my lunch. (eat)', answer: 'have just eaten' },
+                        { type: 'correct-the-sentence', question: 'Have they did the shopping?', answer: 'Have they done the shopping?' },
+                        { type: 'multiple-choice', question: 'He is tired because he ____ all night.', options: ['worked', 'has worked', 'work'], answer: 'has worked' },
+                        { type: 'fill-in-the-blank', question: 'The company ____ (grow) a lot recently.', answer: 'has grown' },
+                        { type: 'correct-the-sentence', question: 'I have forgot your name.', answer: 'I have forgotten your name.' },
+                        { type: 'multiple-choice', question: 'How long ____ you ____ him?', options: ['did, know', 'have, known', 'do, know'], answer: 'have, known' },
+                        { type: 'fill-in-the-blank', question: 'It ____ (rain) all day.', answer: 'has rained' },
+                        { type: 'correct-the-sentence', question: 'She hasn\'t never been to London.', answer: 'She has never been to London.' },
+                        { type: 'multiple-choice', question: 'I can\'t find my wallet. I think I ____ it.', options: ['lost', 'have lost', 'lose'], answer: 'have lost' },
+                        { type: 'fill-in-the-blank', question: 'My sister ____ (write) three books.', answer: 'has written' },
+                        { type: 'correct-the-sentence', question: 'We have already ate.', answer: 'We have already eaten' },
+                        { type: 'multiple-choice', question: 'He ____ since this morning.', options: ['hasn\'t eaten', 'didn\'t eat', 'not eat'], answer: 'hasn\'t eaten' },
+                        { type: 'fill-in-the-blank', question: '____ you ____ the news? (read)', answer: 'Have you read' },
+                    ]
+                },
+                 {
+                    id: 'past-perfect',
+                    title: 'Past Perfect',
+                    summary: 'El Pasado Perfecto se usa para indicar que una acción ocurrió antes que otra acción en el pasado. Se le conoce como "el pasado del pasado".',
+                    grammar: `<h3>Usos del Pasado Perfecto</h3>
+                        <p>1. <strong>Una Acción Pasada Anterior a Otra:</strong> Se usa para clarificar el orden de los eventos en el pasado. La acción en pasado perfecto ocurrió primero.</p>
+                        <ul>
+                            <li>When I arrived at the station, the train <strong class="text-blue-600">had already left</strong>. (Primero se fue el tren, luego llegué yo).</li>
+                            <li>She told me that she <strong class="text-blue-600">had visited</strong> Italy before. (Primero visitó Italia, luego me lo contó).</li>
+                        </ul>
+                         <p>2. <strong>Reported Speech (Estilo Indirecto):</strong> Se usa para reportar algo que se dijo en Pasado Simple o Presente Perfecto.</p>
+                        <ul>
+                            <li><strong>Directo:</strong> "I saw the movie." → <strong>Indirecto:</strong> He said he <strong class="text-blue-600">had seen</strong> the movie.</li>
+                             <li><strong>Directo:</strong> "I have finished." → <strong>Indirecto:</strong> She said she <strong class="text-blue-600">had finished</strong>.</li>
+                        </ul>
+                        <h3>Formación</h3>
+                        <p>Se forma con el verbo auxiliar <strong>'had'</strong> (para todos los sujetos) + el <strong>participio pasado</strong> del verbo principal.</p>
+                        <ul><li>I/You/He/She/It/We/They <strong class="text-blue-600">had worked</strong>.</li></ul>`,
+                    quiz: [
+                        { type: 'multiple-choice', question: 'By the time we got to the cinema, the film ____.', options: ['started', 'had started', 'has started'], answer: 'had started' },
+                        { type: 'fill-in-the-blank', question: 'He said he ____ (forget) his keys.', answer: 'had forgotten' },
+                        { type: 'correct-the-sentence', question: 'I didn\'t go because I have already eaten.', answer: 'I didn\'t go because I had already eaten.' },
+                        { type: 'multiple-choice', question: 'She ____ in that company for ten years before she retired.', options: ['worked', 'has worked', 'had worked'], answer: 'had worked' },
+                        { type: 'fill-in-the-blank', question: 'They ____ never ____ sushi before last night. (eat)', answer: 'had never eaten' },
+                        { type: 'correct-the-sentence', question: 'He had knew her for a long time.', answer: 'He had known her for a long time.' },
+                        { type: 'multiple-choice', question: 'I couldn\'t call you because I ____ my phone.', options: ['lost', 'had lost', 'have lost'], answer: 'had lost' },
+                        { type: 'fill-in-the-blank', question: 'After he ____ (finish) his work, he went home.', answer: 'had finished' },
+                        { type: 'correct-the-sentence', question: 'Had you saw the movie before?', answer: 'Had you seen the movie before?' },
+                        { type: 'multiple-choice', question: 'The police arrived, but the thief ____.', options: ['had escaped', 'escaped', 'has escaped'], answer: 'had escaped' },
+                        { type: 'fill-in-the-blank', question: 'I was tired because I ____ (not sleep) well.', answer: 'had not slept' },
+                        { type: 'correct-the-sentence', question: 'She told me she has been to Paris.', answer: 'She told me she had been to Paris.' },
+                        { type: 'multiple-choice', question: 'He failed the exam because he ____.', options: ['didn\'t study', 'hadn\'t studied', 'hasn\'t studied'], answer: 'hadn\'t studied' },
+                        { type: 'fill-in-the-blank', question: 'I realized I ____ (meet) him before.', answer: 'had met' },
+                        { type: 'correct-the-sentence', question: 'They had already leave when I arrived.', answer: 'They had already left when I arrived.' },
+                        { type: 'multiple-choice', question: 'We ____ for hours when the car broke down.', options: ['drove', 'had been driving', 'had driven'], answer: 'had driven' },
+                        { type: 'fill-in-the-blank', question: 'When I called her, she ____ already ____ the news. (hear)', answer: 'had already heard' },
+                        { type: 'correct-the-sentence', question: 'I had wrote the email before you called.', answer: 'I had written the email before you called.' },
+                        { type: 'multiple-choice', question: 'The house was dirty because they ____ it for weeks.', options: ['didn\'t clean', 'hadn\'t cleaned', 'hasn\'t cleaned'], answer: 'hadn\'t cleaned' },
+                        { type: 'fill-in-the-blank', question: 'She was sad because she ____ (lose) the competition.', answer: 'had lost' },
+                    ]
+                },
+            ]
+        }
+    ];
+
+    const vocabulary = [
+        // Basic Adjectives
+        { word: 'Vivid', definition: '(Adj) Producing powerful feelings or strong, clear images in the mind. - Vívido/a' },
+        { word: 'Concise', definition: '(Adj) Giving a lot of information clearly and in a few words; brief but comprehensive. - Conciso/a' },
+        { word: 'Fundamental', definition: '(Adj) Forming a necessary base or core; of central importance. - Fundamental' },
+        { word: 'Spontaneous', definition: '(Adj) Occurring as a result of a sudden inner impulse; unplanned. - Espontáneo/a' },
+        { word: 'Ambitious', definition: '(Adj) Having a strong desire for success or achievement. - Ambicioso/a' },
+        { word: 'Reliable', definition: '(Adj) Consistently good in quality; able to be trusted. - Confiable' },
+        { word: 'Generous', definition: '(Adj) Showing readiness to give more than is necessary. - Generoso/a' },
+        { word: 'Curious', definition: '(Adj) Eager to know or learn something. - Curioso/a' },
+        { word: 'Persistent', definition: '(Adj) Continuing firmly despite difficulties. - Persistente' },
+        { word: 'Versatile', definition: '(Adj) Able to adapt to many different functions. - Versátil' },
+
+        // Common Verbs
+        { word: 'Modify', definition: '(Verb) Make partial or minor changes to something. - Modificar' },
+        { word: 'Clarify', definition: '(Verb) Make a statement or situation less confused and more comprehensible. - Aclarar' },
+        { word: 'Retire', definition: '(Verb) Leave one\'s job and cease to work, typically upon reaching the normal age. - Jubilarse' },
+        { word: 'Accomplish', definition: '(Verb) Achieve or complete successfully. - Lograr' },
+        { word: 'Persuade', definition: '(Verb) Cause someone to do something through reasoning or argument. - Persuadir' },
+        { word: 'Establish', definition: '(Verb) Set up on a firm or permanent basis. - Establecer' },
+        { word: 'Investigate', definition: '(Verb) Carry out research or study into a subject. - Investigar' },
+        { word: 'Contribute', definition: '(Verb) Give something in order to help achieve or provide something. - Contribuir' },
+        { word: 'Appreciate', definition: '(Verb) Recognize the full worth of something; be grateful for. - Apreciar' },
+        { word: 'Collaborate', definition: '(Verb) Work jointly on an activity or project. - Colaborar' },
+
+        // Important Nouns
+        { word: 'Evidence', definition: '(Noun) The available body of facts or information indicating whether a belief is true. - Evidencia' },
+        { word: 'Consequence', definition: '(Noun) A result or effect of an action or condition. - Consecuencia' },
+        { word: 'Extreme', definition: '(Noun) The furthest or highest degree of something. - Extremo' },
+        { word: 'Opportunity', definition: '(Noun) A set of circumstances that makes it possible to do something. - Oportunidad' },
+        { word: 'Challenge', definition: '(Noun) A task or situation that tests someone\'s abilities. - Desafío' },
+        { word: 'Experience', definition: '(Noun) Practical contact with and observation of facts or events. - Experiencia' },
+        { word: 'Achievement', definition: '(Noun) A thing done successfully with effort, skill, or courage. - Logro' },
+        { word: 'Responsibility', definition: '(Noun) The state of being accountable for something. - Responsabilidad' },
+        { word: 'Perspective', definition: '(Noun) A particular attitude toward or way of regarding something. - Perspectiva' },
+        { word: 'Innovation', definition: '(Noun) The action of making changes in something established. - Innovación' },
+
+        // Business & Work
+        { word: 'Deadline', definition: '(Noun) The latest time or date by which something should be completed. - Fecha límite' },
+        { word: 'Negotiate', definition: '(Verb) Discuss something with someone in order to reach an agreement. - Negociar' },
+        { word: 'Presentation', definition: '(Noun) The action of showing and explaining something to an audience. - Presentación' },
+        { word: 'Efficiency', definition: '(Noun) The state of achieving maximum productivity with minimum effort. - Eficiencia' },
+        { word: 'Strategy', definition: '(Noun) A plan of action designed to achieve a long-term goal. - Estrategia' },
+        { word: 'Budget', definition: '(Noun) An estimate of income and expenditure for a period of time. - Presupuesto' },
+        { word: 'Revenue', definition: '(Noun) Income, especially of a company or organization. - Ingresos' },
+        { word: 'Customer', definition: '(Noun) A person who buys goods or services from a store or business. - Cliente' },
+
+        // Technology & Modern Life
+        { word: 'Algorithm', definition: '(Noun) A process or set of rules to be followed in calculations. - Algoritmo' },
+        { word: 'Database', definition: '(Noun) A structured set of data held in a computer. - Base de datos' },
+        { word: 'Download', definition: '(Verb) Copy data from one computer system to another. - Descargar' },
+        { word: 'Interface', definition: '(Noun) A point where two systems meet and interact. - Interfaz' },
+        { word: 'Network', definition: '(Noun) A group of interconnected people or things. - Red' },
+        { word: 'Software', definition: '(Noun) Computer programs and operating information. - Software' },
+        { word: 'Update', definition: '(Verb) Make something more modern or up to date. - Actualizar' },
+        { word: 'Virtual', definition: '(Adj) Not physically existing but made to appear by software. - Virtual' },
+
+        // Education & Learning
+        { word: 'Comprehension', definition: '(Noun) The action or capability of understanding something. - Comprensión' },
+        { word: 'Analysis', definition: '(Noun) Detailed examination of elements or structure. - Análisis' },
+        { word: 'Research', definition: '(Noun) The systematic investigation into and study of materials. - Investigación' },
+        { word: 'Knowledge', definition: '(Noun) Facts, information, and skills acquired through experience. - Conocimiento' },
+        { word: 'Hypothesis', definition: '(Noun) A supposition made as a starting point for further investigation. - Hipótesis' },
+        { word: 'Theory', definition: '(Noun) A system of ideas intended to explain something. - Teoría' },
+        { word: 'Practice', definition: '(Noun) The actual application or use of an idea or method. - Práctica' },
+
+        // Daily Life & Communication
+        { word: 'Appreciate', definition: '(Verb) Recognize the full worth of something; be grateful for. - Apreciar' },
+        { word: 'Recommend', definition: '(Verb) Put forward someone or something as being suitable. - Recomendar' },
+        { word: 'Compliment', definition: '(Noun) A polite expression of praise or admiration. - Cumplido' },
+        { word: 'Apologize', definition: '(Verb) Express regret for something that one has done wrong. - Disculparse' },
+        { word: 'Arrange', definition: '(Verb) Put things in a particular order; organize an event. - Organizar' },
+        { word: 'Purchase', definition: '(Verb) Buy something; acquire in exchange for payment. - Comprar' },
+        { word: 'Delivery', definition: '(Noun) The action of delivering letters, packages, or goods. - Entrega' },
+        { word: 'Neighborhood', definition: '(Noun) A district or community within a town or city. - Vecindario' },
+
+        // Emotions & Feelings
+        { word: 'Anxious', definition: '(Adj) Feeling worried, nervous, or uneasy about something. - Ansioso/a' },
+        { word: 'Confident', definition: '(Adj) Feeling sure of oneself and one\'s abilities. - Confiado/a' },
+        { word: 'Enthusiastic', definition: '(Adj) Having intense and eager enjoyment or interest. - Entusiasta' },
+        { word: 'Frustrated', definition: '(Adj) Feeling annoyed as a result of being unable to achieve something. - Frustrado/a' },
+        { word: 'Grateful', definition: '(Adj) Feeling thankful for something. - Agradecido/a' },
+        { word: 'Overwhelmed', definition: '(Adj) Feeling completely overcome by something. - Abrumado/a' },
+        { word: 'Satisfied', definition: '(Adj) Pleased because you have achieved something. - Satisfecho/a' },
+
+        // Travel & Places
+        { word: 'Destination', definition: '(Noun) The place to which someone is going or being sent. - Destino' },
+        { word: 'Luggage', definition: '(Noun) Suitcases and bags containing personal belongings. - Equipaje' },
+        { word: 'Reservation', definition: '(Noun) The action of booking something in advance. - Reserva' },
+        { word: 'Transportation', definition: '(Noun) The movement of people or goods from one place to another. - Transporte' },
+        { word: 'Adventure', definition: '(Noun) An unusual and exciting experience or activity. - Aventura' },
+        { word: 'Culture', definition: '(Noun) The arts, customs, and habits of a particular society. - Cultura' },
+        { word: 'Monument', definition: '(Noun) A statue or structure built to commemorate a person or event. - Monumento' }
+    ];
+
+
+    let progress = {};
+    let currentModule = null;
+    let currentQuiz = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const mainContent = document.getElementById('main-content');
+    const homeBtn = document.getElementById('home-btn');
+    const vocabBtn = document.getElementById('vocab-btn');
+
+    function init() {
+        loadProgress();
+        renderModuleList();
+        updateGeneralProgressBar();
+        homeBtn.addEventListener('click', renderModuleList);
+        vocabBtn.addEventListener('click', renderVocabulary);
+    }
+
+    function loadProgress() {
+        const savedProgress = localStorage.getItem('englishCourseProgress');
+        progress = savedProgress ? JSON.parse(savedProgress) : {};
+    }
+
+    function saveProgress() {
+        localStorage.setItem('englishCourseProgress', JSON.stringify(progress));
+    }
+
+    function updateGeneralProgressBar() {
+        const totalModules = courseData.reduce((acc, part) => acc + part.modules.length, 0);
+        const completedModules = Object.keys(progress).length;
+        const percentage = totalModules > 0 ? (completedModules / totalModules) * 100 : 0;
+        const progressBar = document.getElementById('general-progress-bar');
+        progressBar.style.width = `${percentage}%`;
+        if (percentage > 10) {
+            progressBar.textContent = `${Math.round(percentage)}%`;
+        }
+    }
+
+    function renderModuleList() {
+        currentModule = null;
+        mainContent.style.opacity = 0;
+        setTimeout(() => {
+            let content = '';
+            courseData.forEach(part => {
+                content += `<section class="mb-8">
+                                <h2 class="text-2xl font-bold border-b-2 border-blue-200 pb-2 mb-4">${part.part}</h2>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
+                part.modules.forEach(module => {
+                    const isCompleted = progress[module.id];
+                    content += `<div class="card bg-white p-6 rounded-lg shadow-md cursor-pointer flex justify-between items-center" data-module-id="${module.id}">
+                                    <h3 class="text-lg font-semibold text-gray-800">${module.title}</h3>
+                                    <div class="progress-circle ${isCompleted ? 'completed' : ''}">
+                                      ${isCompleted ? '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>' : ''}
+                                    </div>
+                                </div>`;
+                });
+                content += `</div></section>`;
+            });
+            mainContent.innerHTML = content;
+            mainContent.style.opacity = 1;
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const moduleId = card.dataset.moduleId;
+                    renderModuleView(moduleId);
+                });
+            });
+        }, 300);
+    }
+
+    function renderModuleView(moduleId) {
+        currentModule = findModuleById(moduleId);
+        if (!currentModule) return;
+
+        mainContent.style.opacity = 0;
+        setTimeout(() => {
+            mainContent.innerHTML = `
+                <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+                    <button id="back-btn" class="mb-4 text-blue-500 hover:text-blue-700">&larr; Volver a los módulos</button>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-4">${currentModule.title}</h2>
+                    <div class="flex border-b mb-4 overflow-x-auto whitespace-nowrap -mx-2 px-2">
+                        <button class="tab-button py-2 px-4 active shrink-0 mr-2" data-tab="summary">Resumen</button>
+                        <button class="tab-button py-2 px-4 shrink-0 mr-2" data-tab="grammar">Gramática</button>
+                        <button class="tab-button py-2 px-4 shrink-0 mr-2" data-tab="quiz">Prueba</button>
+                    </div>
+                    <div id="tab-content"></div>
+                </div>`;
+
+            showTabContent('summary');
+            
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    document.querySelector('.tab-button.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    showTabContent(e.target.dataset.tab);
+                });
+            });
+            
+            document.getElementById('back-btn').addEventListener('click', renderModuleList);
+            mainContent.style.opacity = 1;
+        }, 300);
+    }
+
+    function showTabContent(tabName) {
+        const tabContent = document.getElementById('tab-content');
+        if (tabName === 'summary') {
+            tabContent.innerHTML = `<div class="prose max-w-none">${currentModule.summary}</div>`;
+        } else if (tabName === 'grammar') {
+            tabContent.innerHTML = `<div class="prose max-w-none">${currentModule.grammar}</div>`;
+        } else if (tabName === 'quiz') {
+            tabContent.innerHTML = `<div class="text-center">
+                <p class="mb-4">El cuestionario tiene ${currentModule.quiz.length} preguntas. ¿Estás listo?</p>
+                <button id="start-quiz-btn" class="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Comenzar Prueba</button>
+            </div>`;
+            document.getElementById('start-quiz-btn').addEventListener('click', startQuiz);
+        }
+    }
+
+    function renderVocabulary() {
+        currentModule = null;
+        mainContent.style.opacity = 0;
+        setTimeout(() => {
+            let flashcardIndex = 0;
+            mainContent.innerHTML = `
+                <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+                     <button id="back-btn" class="mb-4 text-blue-500 hover:text-blue-700">&larr; Volver a los módulos</button>
+                     <h2 class="text-3xl font-bold mb-6 text-center">Vocabulario Activo (Flashcards)</h2>
+                     <div id="flashcard-ui" class="max-w-md mx-auto"></div>
+                </div>`;
+
+            const flashcardUI = document.getElementById('flashcard-ui');
+
+            function renderFlashcard() {
+                const cardData = vocabulary[flashcardIndex];
+                flashcardUI.innerHTML = `
+                     <div class="flashcard-container mb-4">
+                        <div class="flashcard" id="current-flashcard">
+                            <div class="flashcard-front shadow-md"><p class="text-3xl font-bold">${cardData.word}</p></div>
+                            <div class="flashcard-back shadow-md"><p class="text-xl">${cardData.definition}</p></div>
+                        </div>
+                     </div>
+                     <div class="flex justify-center items-center space-x-4 mt-4">
+                        <button id="prev-card" class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300">&larr;</button>
+                        <span class="text-gray-600">${flashcardIndex + 1} / ${vocabulary.length}</span>
+                        <button id="next-card" class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300">&rarr;</button>
+                     </div>
+                     <div id="flashcard-feedback" class="flex justify-around mt-6 hidden">
+                         <button class="bg-red-500 text-white px-6 py-2 rounded-lg w-32 hover:bg-red-600">Repasar</button>
+                         <button class="bg-green-500 text-white px-6 py-2 rounded-lg w-32 hover:bg-green-600">Lo sabía</button>
+                     </div>
+                `;
+
+                const card = document.getElementById('current-flashcard');
+                const feedback = document.getElementById('flashcard-feedback');
+                
+                card.addEventListener('click', () => {
+                    card.classList.toggle('flipped');
+                    feedback.classList.toggle('hidden');
+                });
+                
+                document.getElementById('prev-card').addEventListener('click', () => {
+                    flashcardIndex = (flashcardIndex - 1 + vocabulary.length) % vocabulary.length;
+                    renderFlashcard();
+                });
+
+                document.getElementById('next-card').addEventListener('click', () => {
+                    flashcardIndex = (flashcardIndex + 1) % vocabulary.length;
+                    renderFlashcard();
+                });
+            }
+
+            renderFlashcard();
+            document.getElementById('back-btn').addEventListener('click', renderModuleList);
+            mainContent.style.opacity = 1;
+        }, 300);
+    }
+
+    function startQuiz() {
+        currentQuiz = [...currentModule.quiz].sort(() => 0.5 - Math.random()); // Shuffle questions
+        currentQuestionIndex = 0;
+        score = 0;
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const tabContent = document.getElementById('tab-content');
+        if (currentQuestionIndex >= currentQuiz.length) {
+            showQuizResults();
+            return;
+        }
+
+        const questionData = currentQuiz[currentQuestionIndex];
+        let optionsHtml = '';
+        if (questionData.type === 'multiple-choice') {
+            questionData.options.forEach(option => {
+                optionsHtml += `<button class="quiz-option block w-full text-left bg-gray-100 p-3 rounded-lg hover:bg-blue-100 border border-gray-200 mb-2">${option}</button>`;
+            });
+        } else if (questionData.type === 'fill-in-the-blank' || questionData.type === 'correct-the-sentence') {
+            optionsHtml = `<div class="flex items-center">
+                <input type="text" id="text-answer" class="border p-2 rounded-lg w-full mr-2" placeholder="Escribe tu respuesta aquí...">
+                <button id="submit-text-answer" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Enviar</button>
+            </div>`;
+        }
+
+        tabContent.innerHTML = `
+            <div class="mb-2 text-gray-600">Pregunta ${currentQuestionIndex + 1} de ${currentQuiz.length}</div>
+            <h4 class="text-xl font-semibold mb-4">${questionData.question}</h4>
+            <div id="options-container">${optionsHtml}</div>
+            <div id="feedback" class="mt-4"></div>
+            <button id="next-question-btn" class="hidden mt-4 bg-green-500 text-white px-6 py-2 rounded-lg">Siguiente &rarr;</button>
+        `;
+
+        if (questionData.type === 'multiple-choice') {
+            document.querySelectorAll('.quiz-option').forEach(optionBtn => {
+                optionBtn.addEventListener('click', (e) => handleAnswer(e.target.textContent));
+            });
+        } else {
+             document.getElementById('submit-text-answer').addEventListener('click', () => {
+                const userAnswer = document.getElementById('text-answer').value;
+                handleAnswer(userAnswer);
+            });
+            document.getElementById('text-answer').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('submit-text-answer').click();
+                }
+            });
+        }
+    }
+    
+    function handleAnswer(userAnswer) {
+        const questionData = currentQuiz[currentQuestionIndex];
+        const feedbackEl = document.getElementById('feedback');
+        const optionsContainer = document.getElementById('options-container');
+        const nextBtn = document.getElementById('next-question-btn');
+        
+        const isCorrect = userAnswer.trim().toLowerCase() === questionData.answer.trim().toLowerCase();
+
+        if (isCorrect) {
+            score++;
+            feedbackEl.innerHTML = `<p class="text-green-600 font-bold">¡Correcto!</p>`;
+        } else {
+            feedbackEl.innerHTML = `<p class="text-red-600 font-bold">Incorrecto. La respuesta correcta es: <strong class="font-semibold">${questionData.answer}</strong></p>`;
+        }
+        
+        optionsContainer.querySelectorAll('button, input').forEach(el => {
+            el.disabled = true;
+            el.classList.add('opacity-50', 'cursor-not-allowed');
+        });
+
+        nextBtn.classList.remove('hidden');
+        nextBtn.focus();
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            renderQuestion();
+        }, { once: true }); // Ensure listener is only added once
+    }
+    
+    function showQuizResults() {
+        const tabContent = document.getElementById('tab-content');
+        tabContent.innerHTML = `
+            <div class="text-center">
+                <h3 class="text-2xl font-bold mb-4">¡Prueba Completada!</h3>
+                <p class="text-4xl mb-4">${score}/${currentQuiz.length}</p>
+                <p class="text-lg mb-6">Has respondido correctamente ${score} de ${currentQuiz.length} preguntas.</p>
+                <button id="back-to-module-btn" class="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-600">Volver al Módulo</button>
+            </div>`;
+        
+        if (score / currentQuiz.length >= 0.8) { // Mark as complete if score is 80% or higher
+            progress[currentModule.id] = true;
+            saveProgress();
+            updateGeneralProgressBar();
+        }
+        
+        document.getElementById('back-to-module-btn').addEventListener('click', () => renderModuleView(currentModule.id));
+    }
+
+    function findModuleById(moduleId) {
+        for (const part of courseData) {
+            const foundModule = part.modules.find(module => module.id === moduleId);
+            if (foundModule) return foundModule;
+        }
+        return null;
+    }
+
+    init();
+});
+</script>
+
+</body>
+</html>

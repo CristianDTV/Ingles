@@ -1,0 +1,8 @@
+# Excluir la carpeta Libros y todo su contenido
+Libros/
+
+# Otros archivos comunes que no se suelen subir a Git
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
